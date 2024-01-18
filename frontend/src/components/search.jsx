@@ -46,7 +46,7 @@ export default function Asynchronous() {
                 Referred_By_Name: userData.referredby_name ?? ""
             };
             console.log(dataToSend)
-            const response = await axios.post("http://0.0.0.0:5000/proxy-to-strataemr", dataToSend)
+            const response = await axios.post("http://10.0.0.189:5000/proxy-to-strataemr", dataToSend)
             if (response.status === 200) {
                 // console.log(response.text())
                 toast.success("Patient added successfully!");

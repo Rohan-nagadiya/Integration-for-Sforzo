@@ -1,9 +1,21 @@
 from flask import Flask, jsonify, request
 import json
+import pymongo
 from flask_cors import CORS, cross_origin  # You'll need to install this: pip install Flask-Cors
 import requests
 from urllib.parse import quote
+from bson import json_util, ObjectId
+
+
 app = Flask(__name__)
+
+db = "store_data"
+table = "patient_data"
+conn = pymongo.MongoClient("mongodb+srv://rohannagadiya:sPQQNqNbp2vE3A3Z@database.56qutkr.mongodb.net/")
+mydb = conn[db]
+mycollection = mydb[table]
+
+
 CORS(app) # Allow cross-origin requests
 
 @app.route("/")
@@ -13,12 +25,14 @@ def index():
 
 @app.route("/load_data", methods=['GET'])
 def load_data():
-    # Load the JSON data from the file
-    with open("data.json", "r") as f:
-        data = json.load(f)
-    print("response started")
+    try:
+        # Fetching all data except the '_id' field
+        data = list(mycollection.find({}, {'_id': 0}))
+        return jsonify({"data": data})
+    except Exception as e:
+        app.logger.error(f"Error in load_data: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
-    return jsonify({"data": data})
 
 
 
@@ -35,8 +49,7 @@ def search():
 
 @app.route('/user_data/<int:user_id>')
 def get_user_data(user_id):
-    with open("data.json", "r") as f:
-        data = json.load(f)
+    data = list(mycollection.find({}, {'_id': 0}))
     user = next((user for user in data if user['PatientID'] == user_id), None)
     if user:
         return jsonify(user)
